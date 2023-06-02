@@ -1,10 +1,11 @@
-module github.com/TikTokTechImmersion/assignment_demo_2023/rpc-server
+module github.com/sebbycake/tiktok_assignment_2023/rpc-server
 
 go 1.18
 
 require (
 	github.com/apache/thrift v0.13.0
 	github.com/cloudwego/kitex v0.5.2
+	github.com/go-sql-driver/mysql v1.7.1
 	github.com/kitex-contrib/registry-etcd v0.1.0
 	github.com/stretchr/testify v1.8.2
 )
@@ -20,7 +21,6 @@ require (
 	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/coreos/go-systemd/v22 v22.3.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/go-sql-driver/mysql v1.7.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/pprof v0.0.0-20220608213341-c488b8fa1db3 // indirect
