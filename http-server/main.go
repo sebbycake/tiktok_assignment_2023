@@ -23,18 +23,22 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// initialize a new RPC client
 	cli = imservice.MustNewClient("demo.rpc.server",
 		client.WithResolver(r),
 		client.WithRPCTimeout(1*time.Second),
 		client.WithHostPorts("rpc-server:8888"),
 	)
 
+	// start HTTP server
 	h := server.Default(server.WithHostPorts("0.0.0.0:8080"))
 
 	h.GET("/ping", func(c context.Context, ctx *app.RequestContext) {
 		ctx.JSON(consts.StatusOK, utils.H{"message": "pong"})
 	})
 
+	// define the two API endpoints for send and pull message respectively
 	h.POST("/api/send", sendMessage)
 	h.GET("/api/pull", pullMessage)
 
@@ -53,6 +57,7 @@ func sendMessage(ctx context.Context, c *app.RequestContext) {
 			Chat:   req.Chat,
 			Text:   req.Text,
 			Sender: req.Sender,
+			SendTime: time.Now().UnixNano() / int64(time.Microsecond),
 		},
 	})
 	if err != nil {
