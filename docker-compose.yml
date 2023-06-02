@@ -24,3 +24,12 @@ services:
     command: ["etcd", "--advertise-client-urls", "http://etcd:2379", "--listen-client-urls", "http://0.0.0.0:2379"]
     ports:
       - "2379:2379"
+  db:
+    image: mysql:latest
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: messages
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: password
