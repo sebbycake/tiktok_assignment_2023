@@ -20,7 +20,6 @@ func (s *IMServiceImpl) Send(ctx context.Context, req *rpc.SendRequest) (*rpc.Se
 		resp.Code, resp.Msg = 500, "Error connecting to database"
 		return resp, err
 	}
-	defer database.Close()
 
 	// Execute SQL insert query
 	id, err := database.Create("INSERT INTO messages (chat, text, sender, send_time) VALUES (?, ?, ?, ?)", req.Message.Chat, req.Message.Text, req.Message.Sender, req.Message.SendTime)
@@ -28,6 +27,7 @@ func (s *IMServiceImpl) Send(ctx context.Context, req *rpc.SendRequest) (*rpc.Se
 		resp.Code, resp.Msg = 500, "Error executing INSERT query"
 		return resp, err
 	}
+	
 	resp.Code, resp.Msg = 0, strconv.FormatInt(id, 10)
 	return resp, nil
 }
