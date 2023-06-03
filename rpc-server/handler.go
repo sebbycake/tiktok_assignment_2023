@@ -15,7 +15,7 @@ func (s *IMServiceImpl) Send(ctx context.Context, req *rpc.SendRequest) (*rpc.Se
 	resp := rpc.NewSendResponse()
 
 	// Create a new database connection
-	database, err := db.NewDB("admin", "password", "localhost", "instant_messaging_app")
+	database, err := db.NewDB("root", "root_password", "localhost:3306", "instant_messaging_app")
 	if err != nil {
 		resp.Code, resp.Msg = 500, "Error connecting to database"
 		return resp, err
