@@ -11,11 +11,11 @@ import (
 // IMServiceImpl implements the last service interface defined in the IDL.
 type IMServiceImpl struct{}
 
+var database, err = db.NewDB("sebastian", "sebastian", "host.docker.internal:3306", "instant_messaging_app")
+
 func (s *IMServiceImpl) Send(ctx context.Context, req *rpc.SendRequest) (*rpc.SendResponse, error) {
 	resp := rpc.NewSendResponse()
 
-	// Create a new database connection
-	database, err := db.NewDB("sebastian", "sebastian", "host.docker.internal:3306", "instant_messaging_app")
 	if err != nil {
 		resp.Code, resp.Msg = 500, "Error connecting to database"
 		return resp, err
