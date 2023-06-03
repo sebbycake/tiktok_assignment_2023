@@ -11,14 +11,14 @@ import (
 // IMServiceImpl implements the last service interface defined in the IDL.
 type IMServiceImpl struct{}
 
-var database, err = db.NewDB("sebastian", "sebastian", "host.docker.internal:3306", "instant_messaging_app")
+var database, connectionError = db.NewDB("sebastian", "sebastian", "host.docker.internal:3306", "instant_messaging_app")
 
 func (s *IMServiceImpl) Send(ctx context.Context, req *rpc.SendRequest) (*rpc.SendResponse, error) {
 	resp := rpc.NewSendResponse()
 
-	if err != nil {
+	if connectionError != nil {
 		resp.Code, resp.Msg = 500, "Error connecting to database"
-		return resp, err
+		return resp, connectionError
 	}
 
 	// Execute SQL insert query
@@ -34,6 +34,12 @@ func (s *IMServiceImpl) Send(ctx context.Context, req *rpc.SendRequest) (*rpc.Se
 
 func (s *IMServiceImpl) Pull(ctx context.Context, req *rpc.PullRequest) (*rpc.PullResponse, error) {
 	resp := rpc.NewPullResponse()
+	
+	if connectionError != nil {
+		resp.Code, resp.Msg = 500, "Error connecting to database"
+		return resp, connectionError
+	}
+	
 	resp.Code, resp.Msg = areYouLucky()
 	return resp, nil
 }
