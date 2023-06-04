@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"strconv"
+
 	"github.com/sebbycake/tiktok_assignment_2023/rpc-server/db"
 	"github.com/sebbycake/tiktok_assignment_2023/rpc-server/kitex_gen/rpc"
 )
@@ -42,8 +44,15 @@ func (s *IMServiceImpl) Pull(ctx context.Context, req *rpc.PullRequest) (*rpc.Pu
 		return resp, connectionError
 	}
 
+	var rows *sql.Rows
+	var err error
+
 	fmt.Println("Executing SELECT query")
-	rows, err := database.ReadAll("SELECT chat, text, sender, send_time FROM messages")
+	if *req.Reverse {
+		rows, err = database.ReadAll("SELECT chat, text, sender, send_time FROM messages WHERE chat = ? AND send_time >= ? ORDER BY send_time DESC LIMIT ?", req.Chat, req.Cursor, req.Limit)
+	} else {
+		rows, err = database.ReadAll("SELECT chat, text, sender, send_time FROM messages WHERE chat = ? AND send_time >= ? ORDER BY send_time LIMIT ?", req.Chat, req.Cursor, req.Limit)
+	}
 	if err != nil {
 		resp.Code, resp.Msg = 500, "Error making a select query"
 		return resp, err
