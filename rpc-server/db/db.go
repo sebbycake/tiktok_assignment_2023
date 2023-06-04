@@ -2,6 +2,8 @@ package db
 
 import (
 	"database/sql"
+	"log"
+	"time"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -12,12 +14,20 @@ type DB struct {
 }
 
 // NewDB creates a new DB instance with the provided MySQL connection details.
-func NewDB(username, password, hostname, dbname string) (*DB, error) {
-	dataSourceName := fmt.Sprintf("%s:%s@tcp(%s)/%s", username, password, hostname, dbname)
-	conn, err := sql.Open("mysql", dataSourceName)
+func ConnectToDB() (*DB, error) {
+
+	fmt.Println("Connecting to db")
+	conn, err := sql.Open("mysql", "root:root@tcp(db:3306)/instant_messaging_app")
 	if err != nil {
-		return nil, err
+		log.Fatal(err)
 	}
+
+	for conn.Ping() != nil {
+		fmt.Println("Attempting connection to db")
+		time.Sleep(5 * time.Second)
+	}
+	fmt.Println("Connected to db")
+
 	return &DB{conn: conn}, nil
 }
 

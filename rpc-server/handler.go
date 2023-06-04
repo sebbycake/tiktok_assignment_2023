@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"github.com/sebbycake/tiktok_assignment_2023/rpc-server/db"
 	"github.com/sebbycake/tiktok_assignment_2023/rpc-server/kitex_gen/rpc"
@@ -11,7 +12,7 @@ import (
 // IMServiceImpl implements the last service interface defined in the IDL.
 type IMServiceImpl struct{}
 
-var database, connectionError = db.NewDB("sebastian", "sebastian", "host.docker.internal:3306", "instant_messaging_app")
+var database, connectionError = db.ConnectToDB()
 
 func (s *IMServiceImpl) Send(ctx context.Context, req *rpc.SendRequest) (*rpc.SendResponse, error) {
 	resp := rpc.NewSendResponse()
@@ -21,12 +22,14 @@ func (s *IMServiceImpl) Send(ctx context.Context, req *rpc.SendRequest) (*rpc.Se
 		return resp, connectionError
 	}
 
+	fmt.Println("Executing INSERT query")
 	// Execute SQL insert query
 	id, err := database.Create("INSERT INTO messages (chat, text, sender, send_time) VALUES (?, ?, ?, ?)", req.Message.Chat, req.Message.Text, req.Message.Sender, req.Message.SendTime)
 	if err != nil {
 		resp.Code, resp.Msg = 500, "Error executing INSERT query"
 		return resp, err
 	}
+	fmt.Println("Executed INSERT query")
 	
 	resp.Code, resp.Msg = 0, strconv.FormatInt(id, 10)
 	return resp, nil
@@ -34,11 +37,6 @@ func (s *IMServiceImpl) Send(ctx context.Context, req *rpc.SendRequest) (*rpc.Se
 
 func (s *IMServiceImpl) Pull(ctx context.Context, req *rpc.PullRequest) (*rpc.PullResponse, error) {
 	resp := rpc.NewPullResponse()
-	
-	if connectionError != nil {
-		resp.Code, resp.Msg = 500, "Error connecting to database"
-		return resp, connectionError
-	}
 	
 	resp.Code, resp.Msg = areYouLucky()
 	return resp, nil
