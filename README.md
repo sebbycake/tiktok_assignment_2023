@@ -48,10 +48,14 @@ curl -X GET 'localhost:8080/ping'
 
 Send messages to a receiver: `/api/send`
 ```
-curl -X POST http://localhost:8080/api/send -d '{"Chat":"john:doe", "Text":"hi doe", "Sender": "1"}' -H "Content-Type: application/json"
+curl -X POST http://localhost:8080/api/send \
+    -d '{"Chat":"john:doe", "Text":"hi doe", "Sender": "1"}' \
+    -H "Content-Type: application/json"
 ```
 
 Receive past requests: `/api/pull`
 ```
-curl -X GET http://localhost:8080/api/pull -d '{"Chat":"john:doe", "Cursor": 0, "Limit": 10, "Reverse": false}' -H "Content-Type: application/json"
+curl -X GET http://localhost:8080/api/pull \
+    -d '{"Chat":"john:doe", "Cursor": 0, "Limit": 10, "Reverse": false}' \
+    -H "Content-Type: application/json"
 ```
