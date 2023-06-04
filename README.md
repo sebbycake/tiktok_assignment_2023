@@ -41,21 +41,17 @@ docker compose down
 
 ### Usage
 
-Test the application: `/ping`
+Test connection with server application: `/ping`
 ```
-curl 'localhost:8080/ping'
+curl -X GET 'localhost:8080/ping'
 ```
 
 Send messages to a receiver: `/api/send`
 ```
-curl --request POST \
-  --data '{"Chat":"john:doe", "Text": "hi doe", "Sender": 1}' \
-  http://localhost:8080/api/send
+curl -X POST http://localhost:8080/api/send -d '{"Chat":"john:doe", "Text":"hi doe", "Sender": "1"}' -H "Content-Type: application/json"
 ```
 
 Receive past requests: `/api/pull`
 ```
-curl --request GET \
-  --data '{"Chat":"john:doe", "Cursor": 0, "Limit": 10, "Reverse": false}' \
-  http://localhost:8080/api/pull
+curl -X GET http://localhost:8080/api/pull -d '{"Chat":"john:doe", "Cursor": 0, "Limit": 10, "Reverse": false}' -H "Content-Type: application/json"
 ```
