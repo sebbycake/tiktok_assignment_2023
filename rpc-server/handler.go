@@ -44,14 +44,15 @@ func (s *IMServiceImpl) Pull(ctx context.Context, req *rpc.PullRequest) (*rpc.Pu
 		return resp, connectionError
 	}
 
-	var rows *sql.Rows
-	var err error
+	cursor, limit := validateFields(req.Cursor, req.Limit)
 
 	fmt.Println("Executing SELECT query")
+	var rows *sql.Rows
+	var err error
 	if *req.Reverse {
-		rows, err = database.ReadAll("SELECT chat, text, sender, send_time FROM messages WHERE chat = ? AND send_time >= ? ORDER BY send_time DESC LIMIT ?", req.Chat, req.Cursor, req.Limit)
+		rows, err = database.ReadAll("SELECT chat, text, sender, send_time FROM messages WHERE chat = ? AND send_time >= ? ORDER BY send_time DESC LIMIT ?", req.Chat, cursor, limit)
 	} else {
-		rows, err = database.ReadAll("SELECT chat, text, sender, send_time FROM messages WHERE chat = ? AND send_time >= ? ORDER BY send_time LIMIT ?", req.Chat, req.Cursor, req.Limit)
+		rows, err = database.ReadAll("SELECT chat, text, sender, send_time FROM messages WHERE chat = ? AND send_time >= ? ORDER BY send_time LIMIT ?", req.Chat, cursor, limit)
 	}
 	if err != nil {
 		resp.Code, resp.Msg = 500, "Error making a select query"
@@ -75,4 +76,23 @@ func (s *IMServiceImpl) Pull(ctx context.Context, req *rpc.PullRequest) (*rpc.Pu
 	
 	resp.Code, resp.Msg, resp.Messages = 0, "Successful read", messages
 	return resp, nil
+}
+
+func validateFields(reqCursor int64, reqLimit int32) (validatedCursor int64, validatedLimit int32) {
+	var DEFAULT_CURSOR_VALUE int64 = 0
+	var DEFAULT_LIMIT_VALUE int32 = 10
+
+	// ensure cursor is at least 0
+	var cursor = DEFAULT_CURSOR_VALUE
+	if reqCursor > 0 {
+		cursor = reqCursor
+	}
+
+	// ensure limit is at least 10
+	var limit = DEFAULT_LIMIT_VALUE
+	if reqLimit > 10 {
+		limit = reqLimit
+	}
+
+	return cursor, limit
 }
