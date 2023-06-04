@@ -31,7 +31,7 @@ func (s *IMServiceImpl) Send(ctx context.Context, req *rpc.SendRequest) (*rpc.Se
 		return resp, err
 	}
 	fmt.Println("Executed INSERT query")
-	
+
 	resp.Code, resp.Msg = 0, strconv.FormatInt(id, 10)
 	return resp, nil
 }
@@ -73,8 +73,15 @@ func (s *IMServiceImpl) Pull(ctx context.Context, req *rpc.PullRequest) (*rpc.Pu
 		messages = append(messages, message)
 	}
 	fmt.Println("Finished processing rows")
-	
-	resp.Code, resp.Msg, resp.Messages = 0, "Successful read", messages
+
+	// find next cursor
+	hasMore, nextCursor := findNextCursorIfExist(req.Chat, cursor, limit, *req.Reverse)
+
+	if hasMore {
+		resp.Code, resp.Msg, resp.Messages, resp.HasMore, resp.NextCursor = 0, "Successful read", messages, &hasMore, &nextCursor
+	} else {
+		resp.Code, resp.Msg, resp.Messages, resp.HasMore = 0, "Successful read", messages, &hasMore
+	}
 	return resp, nil
 }
 
@@ -95,4 +102,36 @@ func validateFields(reqCursor int64, reqLimit int32) (validatedCursor int64, val
 	}
 
 	return cursor, limit
+}
+
+func findNextCursorIfExist(reqChat string, cursor int64, limit int32, reqReverse bool) (hasMoreValue bool, nextCursorValue int64) {
+	var count int32
+	row, err := database.Read("SELECT COUNT(*) FROM messages WHERE chat = ? AND send_time >= ?", reqChat, cursor)
+	row.Scan(&count)
+
+	var hasMore bool = false
+	var nextCursor int64 = 0
+
+	if count > limit {
+		hasMore = true
+	}
+
+	var nextCursorRow *sql.Rows
+
+	if reqReverse {
+		nextCursorRow, err = database.ReadAll("SELECT send_time FROM messages WHERE chat = ? AND send_time >= ? ORDER BY send_time DESC LIMIT 1 OFFSET ?", reqChat, cursor, limit)
+	} else {
+		nextCursorRow, err = database.ReadAll("SELECT send_time FROM messages WHERE chat = ? AND send_time >= ? ORDER BY send_time LIMIT 1 OFFSET ?", reqChat, cursor, limit)
+	}
+	if err != nil {
+		return false, 0
+	}
+
+	// Iterate over the single row
+	for nextCursorRow.Next() {
+		nextCursorRow.Scan(&nextCursor)
+	}
+
+	return hasMore, nextCursor
+
 }
