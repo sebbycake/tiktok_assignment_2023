@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"github.com/sebbycake/tiktok_assignment_2023/rpc-server/db"
 	"github.com/sebbycake/tiktok_assignment_2023/rpc-server/kitex_gen/rpc"
-	"math/rand"
 )
 
 // IMServiceImpl implements the last service interface defined in the IDL.
@@ -37,15 +36,34 @@ func (s *IMServiceImpl) Send(ctx context.Context, req *rpc.SendRequest) (*rpc.Se
 
 func (s *IMServiceImpl) Pull(ctx context.Context, req *rpc.PullRequest) (*rpc.PullResponse, error) {
 	resp := rpc.NewPullResponse()
-	
-	resp.Code, resp.Msg = areYouLucky()
-	return resp, nil
-}
 
-func areYouLucky() (int32, string) {
-	if rand.Int31n(2) == 1 {
-		return 0, "success"
-	} else {
-		return 500, "oops"
+	if connectionError != nil {
+		resp.Code, resp.Msg = 500, "Error connecting to database"
+		return resp, connectionError
 	}
+
+	fmt.Println("Executing SELECT query")
+	rows, err := database.ReadAll("SELECT chat, text, sender, send_time FROM messages")
+	if err != nil {
+		resp.Code, resp.Msg = 500, "Error making a select query"
+		return resp, err
+	}
+	fmt.Println("Executed SELECT query")
+
+	var messages []*rpc.Message
+
+	fmt.Println("Processing rows")
+	for rows.Next() {
+		message := rpc.NewMessage()
+		err := rows.Scan(&message.Chat, &message.Text, &message.Sender, &message.SendTime)
+		if err != nil {
+			return nil, err
+		}
+
+		messages = append(messages, message)
+	}
+	fmt.Println("Finished processing rows")
+	
+	resp.Code, resp.Msg, resp.Messages = 0, "Successful read", messages
+	return resp, nil
 }
