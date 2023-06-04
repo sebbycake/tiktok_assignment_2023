@@ -62,7 +62,6 @@ func (s *IMServiceImpl) Pull(ctx context.Context, req *rpc.PullRequest) (*rpc.Pu
 
 	var messages []*rpc.Message
 
-	fmt.Println("Processing rows")
 	for rows.Next() {
 		message := rpc.NewMessage()
 		err := rows.Scan(&message.Chat, &message.Text, &message.Sender, &message.SendTime)
@@ -72,16 +71,14 @@ func (s *IMServiceImpl) Pull(ctx context.Context, req *rpc.PullRequest) (*rpc.Pu
 
 		messages = append(messages, message)
 	}
-	fmt.Println("Finished processing rows")
 
-	// find next cursor
 	hasMore, nextCursor := findNextCursorIfExist(req.Chat, cursor, limit, *req.Reverse)
-
 	if hasMore {
-		resp.Code, resp.Msg, resp.Messages, resp.HasMore, resp.NextCursor = 0, "Successful read", messages, &hasMore, &nextCursor
-	} else {
-		resp.Code, resp.Msg, resp.Messages, resp.HasMore = 0, "Successful read", messages, &hasMore
-	}
+		resp.HasMore, resp.NextCursor = &hasMore, &nextCursor
+	} 
+
+	resp.Code, resp.Msg, resp.Messages = 0, "Successful response", messages
+
 	return resp, nil
 }
 
@@ -127,7 +124,6 @@ func findNextCursorIfExist(reqChat string, cursor int64, limit int32, reqReverse
 		return false, 0
 	}
 
-	// Iterate over the single row
 	for nextCursorRow.Next() {
 		nextCursorRow.Scan(&nextCursor)
 	}
