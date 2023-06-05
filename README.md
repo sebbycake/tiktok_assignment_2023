@@ -47,21 +47,23 @@ Test connection with server application: `/ping`
 curl -X GET 'localhost:8080/ping'
 ```
 
-Send messages to a receiver: `/api/send`
+Send a message to a receiver: `/api/send`
 ```
 curl -X POST http://localhost:8080/api/send \
     -d '{"chat":"john:doe", "text":"hi doe", "sender": "1"}' \
     -H "Content-Type: application/json"
 ```
 
-Receive past requests: `/api/pull`
+Receive past messages from a specific chat: `/api/pull`
 ```
 curl -X GET http://localhost:8080/api/pull \
     -d '{"chat":"john:doe", "cursor": 0, "limit": 10, "reverse": false}' \
     -H "Content-Type: application/json"
 ```
 
-For more information, please refer to the API documention below.
+You can also test using [Postman](https://www.postman.com/), by setting up the request body in the Body tab using JSON.
+
+For more information about the API, please refer to the documention below.
 
 # API Documentation
 
@@ -110,7 +112,7 @@ The request body should be in JSON format and contain the following properties:
 |--------------|--------|----------|-----------------------------------| ----- |
 | `chat`    | string | Yes      | The chat identifier between two people. Format is `<sender>:<receiver>`. | peter:tom  | 
 | `cursor`  | number | Yes      | The starting position of message's send_time in microseconds, inclusively. Default is 0. | 168324550717297 |
-| `limit`  | number | Yes      | The maximum number of messages returned per request.Default is 10.| 15 |
+| `limit`  | number | Yes      | The maximum number of messages returned per request. Default is 10.| 15 |
 | `reverse`  | boolean | Yes      | If true, messages are sorted in descending order by the send time. | false | 
 
 #### Example
