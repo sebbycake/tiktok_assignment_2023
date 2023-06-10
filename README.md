@@ -61,6 +61,11 @@ curl -X GET http://localhost:8080/api/pull \
     -H "Content-Type: application/json"
 ```
 
+Note: 
+If you receive this error message: `remote or network error: get connection error: dial tcp 172.31.0.4:8888: connection has been closed by peer`,
+you would likely made an API request immediately once Docker Compose indicates that the containers have started.
+To resolve this issue, please wait for a few seconds for MySQL database server to set up before making the requests again.
+
 You can also test using [Postman](https://www.postman.com/), by setting up the request body in the Body tab using JSON.
 
 For more information about the API, please refer to the documention below.
