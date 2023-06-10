@@ -2,16 +2,19 @@ package db
 
 import (
 	"database/sql"
-	"log"
-	"time"
+	"errors"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
+	"log"
+	"time"
 )
 
 // DB represents the database connection.
 type DB struct {
 	conn *sql.DB
 }
+
+const maxConnectionAttempts = 10
 
 // NewDB creates a new DB instance with the provided MySQL connection details.
 func ConnectToDB() (*DB, error) {
@@ -22,9 +25,14 @@ func ConnectToDB() (*DB, error) {
 		log.Fatal(err)
 	}
 
+	attempts := 0
 	for conn.Ping() != nil {
 		fmt.Println("Attempting connection to db")
 		time.Sleep(5 * time.Second)
+		attempts++
+		if attempts >= maxConnectionAttempts {
+			return nil, errors.New("Failed to connect to the database")
+		}
 	}
 	fmt.Println("Connected to db")
 
